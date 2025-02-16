@@ -65,14 +65,13 @@ function getColCount() {
 }
 
 function getGridMiddle() {
-  console.log(img.width)
   let coordSpacing = round(img.width / (gridSize * 2));
-  console.log(coordSpacing)
   let coordList = [coordSpacing];
+  tileSize = coordSpacing * 2
   
   let curCoord = coordSpacing;
   for (let i = 1; i < gridSize; i++) {
-    curCoord += (coordSpacing * 2);
+    curCoord += tileSize;
     curCoord = round(curCoord);
     coordList.push(curCoord);
   }
@@ -101,12 +100,17 @@ function getBoardGrid() {
     });
     boardGrid.push(curRowList);
   })
+
+  colorCount = countDistinctColors(boardGrid);
+  if (colorCount != gridSize) {
+    alert("Mismatch between color and board size!")
+  }
 }
 
 function drawBoard() {
   for (let i = 0; i < gridSize; i++) {
     for (let j = 0; j < gridSize; j++) {
-      fill(boardGrid[i][j]);
+      fill(boardGrid[j][i]);
       stroke(0);
       rect(i * tileSize, j * tileSize, tileSize, tileSize);
     }
@@ -128,66 +132,17 @@ function highlightTile(col, row) {
   rect(col * tileSize, row * tileSize, tileSize, tileSize);
 }
 
-function determineGridSize() {
-  // Assuming grid is a square, find the size based on a threshold for tile color change
-  cols = 0;
-  rows = 0;
-  let threshold = 150; // Adjust as needed for color detection
-  let lastColor = null;
+function countDistinctColors(colors) {
+  let colorSet = new Set();
 
-  let black_threshold = 15;
-
-  for (let y = 0; y < img.height; y++) {
-    for (let x = 0; x < img.width; x++) {
-      let index = (x + y * img.width) * 4;
-      let r = img.pixels[index];
-      let g = img.pixels[index + 1];
-      let b = img.pixels[index + 2];
-
-      // Ignore black color (grid border)
-      // if (r <= black_threshold && g <= black_threshold && b <= black_threshold) {
-      //   continue;
-      // }
-
-      let currentColor = color(r, g, b);
-      
-      // Check if color has changed significantly
-      // if ()
-      if (!lastColor || dist(currentColor.levels[0], currentColor.levels[1], currentColor.levels[2],
-                              lastColor.levels[0], lastColor.levels[1], lastColor.levels[2]) > threshold) {
-        if (x > cols) cols = x; // Track the width
-        if (y > rows) rows = y; // Track the height
-        lastColor = currentColor;
-        }
+  // Loop through the 2D array
+  for (let row of colors) {
+    for (let col of row) {
+      // Convert color to a string for uniqueness
+      let colorString = `${col.levels[0]},${col.levels[1]},${col.levels[2]},${col.levels[3]}`;
+      colorSet.add(colorString); // Add to the set
     }
   }
-  
-  // Set tile size based on detected rows and cols
-  tileSize = width / cols;
 
-  // Initialize the color map
-  tileColorMap = Array.from({ length: cols }, () => Array(rows).fill(color(255)));
-}
-
-function extractColors() {
-  img.loadPixels(); // Load the pixel data again after resizing
-  for (let i = 0; i < img.width; i++) {
-    for (let j = 0; j < img.height; j++) {
-      let index = (i + j * img.width) * 4;
-      let r = img.pixels[index];
-      let g = img.pixels[index + 1];
-      let b = img.pixels[index + 2];
-
-      // Ignore black color (grid border)
-      if (!(r === 0 && g === 0 && b === 0)) {
-        let colIndex = floor(i / tileSize);
-        let rowIndex = floor(j / tileSize);
-        
-        // Store the color in the color map
-        if (colIndex < cols && rowIndex < rows) {
-          tileColorMap[colIndex][rowIndex] = color(r, g, b);
-        }
-      }
-    }
-  }
+  return colorSet.size; // Return the count of distinct colors
 }
