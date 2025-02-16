@@ -1,6 +1,5 @@
 let img;
-let cols; // Number of columns
-let rows; // Number of rows
+let gridSize;
 let tileSize; // Size of each tile
 let boardColors = []; // Array to hold colors
 let boardGrid = [];
@@ -61,27 +60,53 @@ function getColCount() {
     }
   }
 
+  gridSize = colCount;
   return colCount;
 }
 
+function getGridMiddle() {
+  console.log(img.width)
+  let coordSpacing = round(img.width / (gridSize * 2));
+  console.log(coordSpacing)
+  let coordList = [coordSpacing];
+  
+  let curCoord = coordSpacing;
+  for (let i = 1; i < gridSize; i++) {
+    curCoord += (coordSpacing * 2);
+    curCoord = round(curCoord);
+    coordList.push(curCoord);
+  }
+
+  console.log(coordList);
+  return coordList;
+}
+
 function getBoardGrid() {
-  let colCount = getColCount();
-  console.log(colCount);
-  for (let y = 0; y < img.height; y++) {
-    for (let x = 0; x < img.width; x++) {
+  getColCount();
+  console.log(`Grid Size: ${gridSize}`);
+
+  let coordList = getGridMiddle();
+
+  coordList.forEach(y => {
+
+    let curRowList = [];
+    coordList.forEach(x => {
       let index = (x + y * img.width) * 4;
       let r = img.pixels[index];
       let g = img.pixels[index + 1];
       let b = img.pixels[index + 2];
-
-    }
-  }
+      let curColor = color(r, g, b);
+      console.log(r, g, b)
+      curRowList.push(curColor);
+    });
+    boardGrid.push(curRowList);
+  })
 }
 
 function drawBoard() {
-  for (let i = 0; i < cols; i++) {
-    for (let j = 0; j < rows; j++) {
-      fill(tileColorMap[i][j]);
+  for (let i = 0; i < gridSize; i++) {
+    for (let j = 0; j < gridSize; j++) {
+      fill(boardGrid[i][j]);
       stroke(0);
       rect(i * tileSize, j * tileSize, tileSize, tileSize);
     }
