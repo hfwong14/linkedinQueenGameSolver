@@ -1,11 +1,12 @@
 let img;
 let gridSize;
 let tileSize; // Size of each tile
-let boardColors = []; // Array to hold colors
+let colorList = []; // Array to hold colors
 let boardGrid = [];
 
 function preload() {
-  img = loadImage('board3.png'); // Load your image
+  // img = loadImage('board3.png'); // Load your image
+  img = loadImage('board4.jpg'); // Load your image
 }
 
 function setup() {
@@ -17,7 +18,7 @@ function setup() {
 
   // copy from draw() so it only run once
   background(255);
-  drawBoard();
+  displayBoard();
 }
 
 function draw() {
@@ -87,7 +88,6 @@ function getBoardGrid() {
   let coordList = getGridMiddle();
 
   coordList.forEach(y => {
-
     let curRowList = [];
     coordList.forEach(x => {
       let index = (x + y * img.width) * 4;
@@ -98,16 +98,17 @@ function getBoardGrid() {
       console.log(r, g, b)
       curRowList.push(curColor);
     });
+
     boardGrid.push(curRowList);
   })
 
-  colorCount = countDistinctColors(boardGrid);
-  if (colorCount != gridSize) {
+  colorList = getDistinctColors(boardGrid);
+  if (colorList.size != gridSize) {
     alert("Mismatch between color and board size!")
   }
 }
 
-function drawBoard() {
+function displayBoard() {
   for (let i = 0; i < gridSize; i++) {
     for (let j = 0; j < gridSize; j++) {
       fill(boardGrid[j][i]);
@@ -121,8 +122,8 @@ function mousePressed() {
   let col = floor(mouseX / tileSize);
   let row = floor(mouseY / tileSize);
 
-  if (col >= 0 && col < cols && row >= 0 && row < rows) {
-    highlightTile(col, row);
+  if (col >= 0 && col < gridSize && row >= 0 && row < gridSize) {
+    // highlightTile(col, row);
   }
 }
 
@@ -132,17 +133,21 @@ function highlightTile(col, row) {
   rect(col * tileSize, row * tileSize, tileSize, tileSize);
 }
 
-function countDistinctColors(colors) {
+function getDistinctColors(colors) {
   let colorSet = new Set();
 
   // Loop through the 2D array
   for (let row of colors) {
     for (let col of row) {
       // Convert color to a string for uniqueness
-      let colorString = `${col.levels[0]},${col.levels[1]},${col.levels[2]},${col.levels[3]}`;
+      let colorString = getColorString(col);
       colorSet.add(colorString); // Add to the set
     }
   }
 
-  return colorSet.size; // Return the count of distinct colors
+  return colorSet; // Return the count of distinct colors
+}
+
+function getColorString(curColor) {
+  return `${curColor.levels[0]}_${curColor.levels[1]}_${curColor.levels[2]}`
 }
