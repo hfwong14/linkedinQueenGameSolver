@@ -3,6 +3,9 @@ let gridSize;
 let tileSize; // Size of each tile
 let colorList = []; // Array to hold colors
 let boardGrid = [];
+let colorLabelDict = {};
+let labelColorDict = {};
+let embedGrid = [];
 
 function preload() {
   // img = loadImage('board3.png'); // Load your image
@@ -12,8 +15,6 @@ function preload() {
 function setup() {
   createCanvas(800, 800); // Adjust canvas size as needed
   img.loadPixels(); // Load image pixels
-  // determineGridSize(); // Determine grid size
-  // extractColors(); // Extract colors from the image
   getBoardGrid();
 
   // copy from draw() so it only run once
@@ -102,18 +103,49 @@ function getBoardGrid() {
     boardGrid.push(curRowList);
   })
 
+  // Check it didn't mis-detect more or less colors
   colorList = getDistinctColors(boardGrid);
   if (colorList.size != gridSize) {
     alert("Mismatch between color and board size!")
   }
+
+  // Embedding colors to labels
+  let curColorIndex = 0;
+  colorList.forEach(curColorStr => {
+    colorLabelDict[curColorStr] = curColorIndex;
+    labelColorDict[curColorIndex] = curColorStr;
+    curColorIndex++;
+  })  
+
+  embeddingBoard();
+}
+
+function embeddingBoard() {
+  console.log(boardGrid)
+  boardGrid.forEach(row => {
+    let curRowList = [];
+    row.forEach(x => {
+      curRowList.push(colorLabelDict[getColorString(x)]);
+    });
+
+    embedGrid.push(curRowList);
+  })
 }
 
 function displayBoard() {
   for (let i = 0; i < gridSize; i++) {
     for (let j = 0; j < gridSize; j++) {
-      fill(boardGrid[j][i]);
+      let curColor = boardGrid[j][i];
+      fill(curColor);
       stroke(0);
       rect(i * tileSize, j * tileSize, tileSize, tileSize);
+      
+      // Display text at the center of the cell
+      fill(0);
+      textAlign(CENTER, CENTER);
+      textSize(16);
+      let cellText = `${embedGrid[j][i]}`;
+      text(cellText, i * tileSize + tileSize / 2, j * tileSize + tileSize / 2);
     }
   }
 }
